@@ -1,0 +1,16 @@
+[Unit]
+Description=Downloads Sorter — file new downloads into category folders
+Documentation=https://github.com/patrickdeanfox/downloads-sorter
+After=graphical-session.target
+
+[Service]
+Type=simple
+WorkingDirectory=@REPO@
+ExecStart=@PYTHON@ -m downloads_sorter --watch --config %h/.config/downloads-sorter/config.toml
+Restart=on-failure
+RestartSec=5
+# Light resource ceiling; the watcher is nearly idle.
+Nice=10
+
+[Install]
+WantedBy=default.target

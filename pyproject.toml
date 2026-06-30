@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "downloads-sorter"
+version = "1.0.0"
+description = "Watch folders and file new downloads into category folders. No AI, no dependencies."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Patrick Fox", email = "patrickdeanfox@pm.me" }]
+keywords = ["downloads", "file-organizer", "automation", "sort", "watcher"]
+classifiers = [
+    "Environment :: X11 Applications",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Desktop Environment :: File Managers",
+    "Topic :: Utilities",
+]
+# Runtime dependencies: none. Pure standard library (Python 3.11+).
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+downloads-sorter = "downloads_sorter.cli:main"
+downloads-sorter-gui = "downloads_sorter.gui:main"
+
+[project.urls]
+Homepage = "https://github.com/patrickdeanfox/downloads-sorter"
+Issues = "https://github.com/patrickdeanfox/downloads-sorter/issues"
+
+[tool.setuptools]
+packages = ["downloads_sorter"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

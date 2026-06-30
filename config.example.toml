@@ -1,0 +1,30 @@
+# downloads-sorter configuration
+# Edit and the running service will pick it up on its next restart.
+
+downloads_dir = "/home/patrick/Downloads"
+home_dir = "/home/patrick"
+watch_home = true
+sorted_subfolder = ""
+dry_run = false
+notifications = true
+poll_interval = 2.0
+settle_seconds = 2.0
+sort_existing_on_start = true
+on_duplicate = "move"
+skip_suffixes = [".part", ".crdownload", ".download", ".opdownload", ".tmp", ".partial", ".!ut"]
+
+[folders]
+# category = [list of extensions]. Files matching nothing go to Misc.
+Documents = [".pdf", ".doc", ".docx", ".odt", ".rtf", ".txt", ".md", ".tex", ".csv", ".xls", ".xlsx", ".ods", ".ppt", ".pptx", ".odp", ".pages", ".numbers", ".key"]
+Images = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".heic", ".heif", ".tiff", ".tif", ".raw", ".ico", ".avif"]
+Archives = [".zip", ".tar", ".gz", ".tgz", ".rar", ".7z", ".bz2", ".xz", ".zst", ".tar.gz", ".tar.bz2", ".tar.xz"]
+Installers = [".exe", ".deb", ".rpm", ".appimage", ".msi", ".dmg", ".run", ".flatpakref", ".snap", ".apk", ".pkg"]
+DiskImages = [".iso", ".img"]
+Web = [".html", ".htm", ".mhtml", ".webloc", ".url", ".maff"]
+Media = [".mp4", ".mkv", ".mp3", ".flac", ".wav", ".avi", ".mov", ".m4a", ".ogg", ".webm", ".m4v", ".opus", ".aac", ".wma", ".flv"]
+Code = [".py", ".js", ".ts", ".jsx", ".tsx", ".json", ".yaml", ".yml", ".sh", ".bash", ".zsh", ".rs", ".go", ".c", ".cpp", ".h", ".java", ".rb", ".php", ".cs", ".swift", ".kt", ".lua", ".r", ".sql", ".toml", ".ini", ".cfg", ".conf", ".ipynb"]
+Ebooks = [".epub", ".mobi", ".azw3", ".djvu", ".fb2"]
+Fonts = [".ttf", ".otf", ".woff", ".woff2"]
+Torrents = [".torrent"]
+Misc = []
+

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Downloads Sorter
+Comment=Control panel for the downloads-sorter service
+Exec=@PYTHON@ -m downloads_sorter.gui
+Path=@REPO@
+Icon=folder-download
+Terminal=false
+Categories=Utility;System;
+Keywords=downloads;sort;files;organize;
