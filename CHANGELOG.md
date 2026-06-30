@@ -3,6 +3,19 @@
 All notable changes to this project are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+- `--once --include-home`: a deliberate one-time sweep of the existing backlog
+  of loose downloads in the top level of the home folder (known types only).
+- `ignore_names` config option: exact filenames that are never moved, so
+  working/project files kept in home (e.g. `package-lock.json`) are protected
+  from sweeps everywhere.
+
+### Fixed
+- `--dry-run` is no longer baked into the auto-created config file; a transient
+  preview run could leave `dry_run=true` on disk and silence later real runs.
+
 ## [1.0.0] — 2026-06-30
 
 First release. A ground-up simplification of an earlier "AI Downloads Sorter".

@@ -81,6 +81,8 @@ class Config:
     sort_existing_on_start: bool = True  # sort loose files already in Downloads
     on_duplicate: str = "move"          # "move" → Duplicates folder | "skip" | "delete"
     skip_suffixes: list[str] = field(default_factory=lambda: list(DEFAULT_SKIP_SUFFIXES))
+    # Exact filenames to never move (e.g. working/project files kept in home).
+    ignore_names: list[str] = field(default_factory=list)
     folders: dict[str, list[str]] = field(
         default_factory=lambda: {k: list(v) for k, v in DEFAULT_FOLDERS.items()})
 

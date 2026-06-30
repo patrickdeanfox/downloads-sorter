@@ -60,6 +60,8 @@ def is_eligible(path: Path, cfg: Config, *, home: bool) -> bool:
     name = path.name
     if name.startswith("."):
         return False
+    if name in cfg.ignore_names:
+        return False
     if is_partial(name, cfg.skip_suffixes):
         return False
     try:

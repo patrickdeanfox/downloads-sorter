@@ -54,6 +54,16 @@ def test_home_skips_unknown_types(tmp_path):
     assert core.is_eligible(unknown, cfg, home=False) is True
 
 
+def test_ignore_names_protects_files(tmp_path):
+    cfg = Config(downloads_dir=str(tmp_path), ignore_names=["package-lock.json"])
+    protected = tmp_path / "package-lock.json"; protected.write_text("{}")
+    normal = tmp_path / "other.json"; normal.write_text("{}")
+    # Protected in both home and downloads contexts.
+    assert core.is_eligible(protected, cfg, home=False) is False
+    assert core.is_eligible(protected, cfg, home=True) is False
+    assert core.is_eligible(normal, cfg, home=False) is True
+
+
 def test_dotfiles_and_partials_never_eligible(tmp_path):
     cfg = Config(downloads_dir=str(tmp_path))
     dot = tmp_path / ".secret.pdf"; dot.write_text("x")

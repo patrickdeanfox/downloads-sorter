@@ -36,6 +36,9 @@ def build_parser() -> argparse.ArgumentParser:
                       help="run continuously (the long-lived service mode)")
     mode.add_argument("--once", action="store_true",
                       help="sort files already loose in Downloads, then exit")
+    p.add_argument("--include-home", action="store_true",
+                   help="with --once: also sweep eligible loose files from the "
+                        "top level of your home folder (known types only)")
     mode.add_argument("--undo", nargs="?", type=int, const=1, metavar="N",
                       help="undo the last N moves (default 1)")
     mode.add_argument("--print-config", action="store_true",
@@ -68,12 +71,20 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.once:
         count = 0
-        for entry in _top_level(Path(cfg.downloads_dir)):
-            if is_eligible(entry, cfg, home=False):
-                r = sort_file(entry, cfg)
-                if r.action in ("moved", "dry-run", "duplicate"):
-                    print(f"{r.action}: {r.src.name} → {r.category}")
-                    count += 1
+
+        def sweep(folder: Path, *, home: bool) -> int:
+            n = 0
+            for entry in _top_level(folder):
+                if is_eligible(entry, cfg, home=home):
+                    r = sort_file(entry, cfg)
+                    if r.action in ("moved", "dry-run", "duplicate"):
+                        print(f"{r.action}: {r.src.name} → {r.category}")
+                        n += 1
+            return n
+
+        count += sweep(Path(cfg.downloads_dir), home=False)
+        if args.include_home:
+            count += sweep(Path(cfg.home_dir), home=True)
         print(f"Done — {count} file(s) {'previewed' if cfg.dry_run else 'sorted'}.")
         return 0
 

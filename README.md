@@ -55,6 +55,11 @@ Downloads, by contrast, gets its existing loose files sorted on start (toggle
 with `sort_existing_on_start`). You can disable home watching entirely with
 `watch_home = false`.
 
+To clear an **existing backlog** of loose downloads already sitting in your home
+folder, run a deliberate one-time sweep: `--once --include-home` (preview with
+`--dry-run` first). It still honours the known-types rule and `ignore_names`, so
+working/project files you list there are left in place.
+
 ## Install
 
 ```bash
@@ -89,6 +94,11 @@ The service runs on its own. For everything else:
 ```bash
 # Sort whatever is already loose in Downloads, then exit
 python3 -m downloads_sorter --once
+
+# Also sweep the existing backlog of loose downloads from your home folder
+# (known types only; respects ignore_names). Preview it first with --dry-run.
+python3 -m downloads_sorter --once --include-home --dry-run
+python3 -m downloads_sorter --once --include-home
 
 # Preview without moving anything
 python3 -m downloads_sorter --once --dry-run
@@ -132,6 +142,7 @@ downloads-sorter`), or save from the GUI which restarts it for you.
 | `sort_existing_on_start` | `true` | Sort loose Downloads files at startup |
 | `on_duplicate` | `"move"` | `move` → Duplicates / `skip` / `delete` |
 | `skip_suffixes` | `.part`, `.crdownload`, … | In-progress files to ignore |
+| `ignore_names` | `[]` | Exact filenames to never move (e.g. project/working files kept in home) |
 | `[folders]` | see file | `category = [extensions]` map |
 
 Edit the `[folders]` table to add extensions or new categories.
