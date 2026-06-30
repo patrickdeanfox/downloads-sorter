@@ -46,12 +46,15 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     cfg = load_config(args.config)
-    if args.dry_run:
-        cfg.dry_run = True
 
-    # Make sure a config file exists so it's easy to discover and edit.
+    # Make sure a config file exists so it's easy to discover and edit. Do this
+    # *before* applying transient CLI flags, so e.g. --dry-run is never baked
+    # into the saved config.
     if not args.config.exists():
         save_config(cfg, args.config)
+
+    if args.dry_run:
+        cfg.dry_run = True
 
     if args.print_config:
         from .config import dumps_config
