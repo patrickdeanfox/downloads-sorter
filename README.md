@@ -1,5 +1,10 @@
 # downloads-sorter
 
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
+![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey)
+
 Watch your **Downloads** folder (and, safely, the top level of your **home**
 folder) and file every finished download into a folder chosen by its type —
 `Documents/`, `Images/`, `Media/`, `Code/`, and so on.
@@ -26,6 +31,38 @@ folder). This tool keeps that tidy automatically: the moment a download
 finishes, it lands in the right category folder. Every move is logged and
 reversible.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    DL["~/Downloads<br/>(loose files)"]
+    HM["~ home, top level<br/>(new files only)"]
+    CFG[("config.toml")]
+    LOG[("moves.log")]
+    CAT["~/Downloads/<br/>Documents · Images · Media · Code · …"]
+    DUP["~/Downloads/Duplicates"]
+    GUI["gui.py<br/>control panel"]
+
+    subgraph svc["systemd --user service · downloads-sorter --watch"]
+        W["watcher.py<br/>polling loop"]
+        C["core.py<br/>categorize · dedup · move"]
+        W --> C
+    end
+
+    DL --> W
+    HM --> W
+    CFG -. settings .-> W
+    C -- move --> CAT
+    C -- identical --> DUP
+    C -- append row --> LOG
+    GUI -. start/stop/enable .-> W
+    GUI -. history · undo · stats .-> LOG
+```
+
+The watcher is the only long-lived piece; `core.py` is pure logic with no
+shared state, and the GUI is just a front-end that drives the service and reads
+the move log.
+
 ## How it works
 
 - A **polling watcher** scans the top level of the watched folders every couple
@@ -39,6 +76,26 @@ reversible.
   `-2`, … suffix.
 - Every move is recorded in a CSV log so it can be undone.
 
+The decision each file goes through:
+
+```mermaid
+flowchart TD
+    A([File at top level of a watched folder]) --> B{Dotfile, partial<br/>.crdownload/.part,<br/>or in ignore_names?}
+    B -- yes --> SKIP([Leave in place])
+    B -- no --> H{In home<br/>and unknown type?}
+    H -- yes --> SKIP
+    H -- no --> S{Size stable since<br/>last scan AND older<br/>than settle_seconds?}
+    S -- not yet --> WAIT([Re-check next tick])
+    S -- yes --> D{Identical file<br/>already in target?}
+    D -- yes --> DUP[Move to Duplicates/]
+    D -- no --> N{Name taken by<br/>different content?}
+    N -- yes --> R[Append -1, -2, …]
+    N -- no --> M[Move into category folder]
+    R --> M
+    M --> L([Record in moves.log · undoable])
+    DUP --> L
+```
+
 ### Home-folder safety
 
 Watching your whole home folder would be dangerous — it's full of files you
@@ -50,6 +107,20 @@ keep there on purpose. So the rule is deliberately conservative:
 3. **Pre-existing files are never swept.** At startup the watcher snapshots
    everything already in `~` and ignores all of it — only files that appear
    *after* the service starts are eligible.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Svc as Service start
+    participant H as ~ (home)
+    participant D as ~/Downloads
+    Svc->>H: snapshot existing files → ignore forever (never swept)
+    Svc->>D: sort loose files (if sort_existing_on_start)
+    loop every poll_interval
+        Svc->>D: scan top level → sort any finished file
+        Svc->>H: scan top level → sort only NEW, known-type files
+    end
+```
 
 Downloads, by contrast, gets its existing loose files sorted on start (toggle
 with `sort_existing_on_start`). You can disable home watching entirely with
@@ -146,6 +217,27 @@ downloads-sorter`), or save from the GUI which restarts it for you.
 | `[folders]` | see file | `category = [extensions]` map |
 
 Edit the `[folders]` table to add extensions or new categories.
+
+## Project layout
+
+```
+downloads_sorter/
+├── config.py     # defaults, the extension→folder map, TOML load/save
+├── core.py       # pure logic: categorize · dedup · collision-safe move · undo
+├── watcher.py    # polling loop + single-instance lock + home-snapshot safety
+├── notify.py     # best-effort desktop notifications (notify-send)
+├── cli.py        # argparse entry point  (python3 -m downloads_sorter)
+└── gui.py        # Tkinter control panel  (python3 -m downloads_sorter.gui)
+packaging/
+├── downloads-sorter.service.in   # systemd --user unit template
+├── downloads-sorter.desktop.in   # GUI launcher template
+├── install.sh / uninstall.sh     # wire up / remove the service
+tests/            # pytest: core logic, CLI side-effects, watcher behaviour
+```
+
+State lives outside the repo, in XDG locations:
+`~/.config/downloads-sorter/config.toml` and
+`~/.local/state/downloads-sorter/moves.log`.
 
 ## Browser integration
 
