@@ -13,8 +13,16 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
   from sweeps everywhere.
 
 ### Fixed
+- **Watcher never sorted files when Downloads lives inside home** (the default
+  layout). The "forget vanished files" cleanup matched on a path prefix, so the
+  home scan wiped the pending state of files under `Downloads/` every tick and
+  they never registered as size-stable. Now matched on the immediate parent.
+  Added watcher regression tests covering the nested layout.
 - `--dry-run` is no longer baked into the auto-created config file; a transient
   preview run could leave `dry_run=true` on disk and silence later real runs.
+- `install.sh` now pins the resolved Python interpreter (not a pyenv/asdf shim,
+  which the minimal systemd --user environment may not resolve) and uses
+  `restart` so re-running it always picks up unit/config changes.
 
 ## [1.0.0] — 2026-06-30
 

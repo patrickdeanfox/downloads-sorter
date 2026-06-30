@@ -4,7 +4,9 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON="$(command -v python3)"
+# Resolve to the real interpreter, not a pyenv/asdf shim — shims rely on shell
+# environment that the minimal systemd --user session may not provide.
+PYTHON="$(python3 -c 'import sys; print(sys.executable)')"
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/downloads-sorter"
 SERVICE="downloads-sorter.service"
@@ -37,9 +39,12 @@ sed -e "s|@REPO@|$REPO|g" -e "s|@PYTHON@|$PYTHON|g" \
     "$REPO/packaging/downloads-sorter.desktop.in" > "$APPS_DIR/downloads-sorter.desktop"
 echo "Installed launcher: $APPS_DIR/downloads-sorter.desktop"
 
-# 5. Reload and (re)start.
+# 5. Reload, enable on login, and (re)start. Use restart (not enable --now) so
+#    re-running the installer always picks up unit/config changes instead of
+#    leaving a stale instance running.
 systemctl --user daemon-reload
-systemctl --user enable --now "$SERVICE"
+systemctl --user enable "$SERVICE"
+systemctl --user restart "$SERVICE"
 echo
 echo "Service enabled and started. Check it with:"
 echo "  systemctl --user status $SERVICE"

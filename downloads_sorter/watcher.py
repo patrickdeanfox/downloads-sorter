@@ -137,9 +137,12 @@ class Watcher:
                 results.append(sort_file(entry, self.cfg))
             else:
                 self._pending[key] = st.st_size
-        # forget files that are gone (moved or deleted)
+        # Forget files that are gone (moved or deleted). Match on the immediate
+        # parent, NOT a path prefix: when Downloads lives *inside* home, a prefix
+        # match would let the home scan wipe Downloads' pending state every tick,
+        # so files there would never register as size-stable.
         for key in list(self._pending):
-            if key.startswith(str(folder) + os.sep) and key not in seen_now:
+            if Path(key).parent == folder and key not in seen_now:
                 self._pending.pop(key, None)
         return results
 
