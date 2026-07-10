@@ -78,6 +78,12 @@ class Config:
     notifications: bool = True
     poll_interval: float = 2.0          # seconds between scans
     settle_seconds: float = 2.0         # min age before a file is "finished"
+    # Grace period before autosorting. A file must be this many seconds old
+    # (since last modified) before the watcher moves it, so a freshly downloaded
+    # file stays put in Downloads long enough for you to open or use it. Set to 0
+    # to sort as soon as a download finishes. Manual sweeps (--once, including
+    # --include-home) ignore this and sort immediately.
+    sort_delay_seconds: float = 600.0   # 10 minutes
     sort_existing_on_start: bool = True  # sort loose files already in Downloads
     on_duplicate: str = "move"          # "move" → Duplicates folder | "skip" | "delete"
     skip_suffixes: list[str] = field(default_factory=lambda: list(DEFAULT_SKIP_SUFFIXES))

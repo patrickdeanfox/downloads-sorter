@@ -6,6 +6,10 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- `sort_delay_seconds` config option (default `600.0` — 10 minutes): a grace
+  period before a finished download is autosorted, so a freshly downloaded file
+  stays put in Downloads long enough to open or use it. Set to `0` to sort as
+  soon as a download finishes; manual `--once` sweeps ignore it and sort now.
 - `--once --include-home`: a deliberate one-time sweep of the existing backlog
   of loose downloads in the top level of the home folder (known types only).
 - `ignore_names` config option: exact filenames that are never moved, so
