@@ -69,6 +69,10 @@ the move log.
   of seconds. It only acts on files that are *finished* — stable in size and a
   little older than `settle_seconds` — so half-downloaded files (`.crdownload`,
   `.part`, …) are never touched.
+- A **grace period** (`sort_delay_seconds`, 10 minutes by default) keeps each
+  finished download in place before it is autosorted, so you can open or use a
+  file right where it landed. Set it to `0` to sort as soon as a download
+  finishes. Manual sweeps (`--once`) ignore the grace period and sort now.
 - Files keep their **original names**; they are only moved, never renamed.
 - **Duplicate handling:** if an identical file (same size + SHA-256) already
   exists in the target, the new copy is moved into a `Duplicates/` folder
@@ -84,7 +88,7 @@ flowchart TD
     B -- yes --> SKIP([Leave in place])
     B -- no --> H{In home<br/>and unknown type?}
     H -- yes --> SKIP
-    H -- no --> S{Size stable since<br/>last scan AND older<br/>than settle_seconds?}
+    H -- no --> S{Size stable since<br/>last scan AND older<br/>than the grace period?}
     S -- not yet --> WAIT([Re-check next tick])
     S -- yes --> D{Identical file<br/>already in target?}
     D -- yes --> DUP[Move to Duplicates/]
@@ -210,6 +214,7 @@ downloads-sorter`), or save from the GUI which restarts it for you.
 | `notifications` | `true` | Desktop notifications via `notify-send` |
 | `poll_interval` | `2.0` | Seconds between scans |
 | `settle_seconds` | `2.0` | Min file age before it's "finished" |
+| `sort_delay_seconds` | `600.0` | Grace period before autosorting a finished download (`0` = immediately) |
 | `sort_existing_on_start` | `true` | Sort loose Downloads files at startup |
 | `on_duplicate` | `"move"` | `move` → Duplicates / `skip` / `delete` |
 | `skip_suffixes` | `.part`, `.crdownload`, … | In-progress files to ignore |

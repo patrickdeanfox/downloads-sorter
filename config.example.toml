@@ -9,6 +9,9 @@ dry_run = false
 notifications = true
 poll_interval = 2.0
 settle_seconds = 2.0
+# Grace period (seconds) before a finished download is autosorted. Keeps a fresh
+# file in Downloads long enough to open/use it. 0 = sort as soon as it finishes.
+sort_delay_seconds = 600.0
 sort_existing_on_start = true
 on_duplicate = "move"
 skip_suffixes = [".part", ".crdownload", ".download", ".opdownload", ".tmp", ".partial", ".!ut"]

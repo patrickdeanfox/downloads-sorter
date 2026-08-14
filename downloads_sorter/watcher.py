@@ -80,6 +80,9 @@ class Watcher:
             self._log(f"watching downloads: {self.cfg.downloads_dir}")
             if self.cfg.watch_home:
                 self._log(f"watching home (new files only): {self.cfg.home_dir}")
+            if self.cfg.sort_delay_seconds > self.cfg.settle_seconds:
+                self._log(f"grace period: {self.cfg.sort_delay_seconds:.0f}s "
+                          "before a file is autosorted")
             if self.cfg.dry_run:
                 self._log("DRY-RUN — nothing will actually move")
             if self.cfg.sort_existing_on_start:
@@ -102,9 +105,20 @@ class Watcher:
             self._home_ignore.add(str(entry))
 
     def _sort_existing_downloads(self) -> None:
+        # Sort files already loose in Downloads at startup, but honour the grace
+        # period: anything younger than the threshold is left for the scan loop to
+        # pick up once it has aged enough.
         results = []
+        now = time.time()
+        threshold = max(self.cfg.settle_seconds, self.cfg.sort_delay_seconds)
         for entry in _top_level(Path(self.cfg.downloads_dir)):
-            if is_eligible(entry, self.cfg, home=False):
+            if not is_eligible(entry, self.cfg, home=False):
+                continue
+            try:
+                st = entry.stat()
+            except OSError:
+                continue
+            if (now - st.st_mtime) >= threshold:
                 results.append(sort_file(entry, self.cfg))
         self._report(results)
 
@@ -131,7 +145,11 @@ class Watcher:
             except OSError:
                 continue
             stable_size = self._pending.get(key) == st.st_size
-            old_enough = (time.time() - st.st_mtime) >= self.cfg.settle_seconds
+            # A file must be size-stable AND past the grace period before it is
+            # moved. settle_seconds detects a finished download; sort_delay_seconds
+            # is the deliberate wait that keeps a fresh file in Downloads.
+            threshold = max(self.cfg.settle_seconds, self.cfg.sort_delay_seconds)
+            old_enough = (time.time() - st.st_mtime) >= threshold
             if stable_size and old_enough:
                 self._pending.pop(key, None)
                 results.append(sort_file(entry, self.cfg))
